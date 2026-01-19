@@ -1,9 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --c-pink: #F075AE;
+  --c-sand: #F7DB91;
+  --c-cream: #FFFDCE;
+  --c-green: #9BC264;
+
+  /* neutrals for readability */
+  --c-bg: #0b0b0f;
+  --c-card: #12121a;
+  --c-text: #f5f5f7;
+  --c-muted: rgba(245, 245, 247, 0.75);
+  --c-border: rgba(245, 245, 247, 0.12);
 }
+
 
 @theme inline {
   --color-background: var(--background);
