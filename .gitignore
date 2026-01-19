@@ -1,0 +1,87 @@
+# =========================
+# Dependencies
+# =========================
+# Node / JS deps
+node_modules/
+**/node_modules/
+
+# =========================
+# Logs
+# =========================
+logs/
+**/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Build / caches
+# =========================
+.next/
+.next/cache/
+out/
+build/
+dist/
+.cache/
+.turbo/
+.vite/
+.storybook/
+storybook-static/
+
+# =========================
+# Vercel / deployments
+# =========================
+.vercel/
+.vercel/output/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+**/.env
+.env.local
+.env.*.local
+.env.production
+
+# =========================
+# TypeScript build info
+# =========================
+*.tsbuildinfo
+
+# =========================
+# Coverage / test artifacts
+# =========================
+coverage/
+coverage-final.json
+*.lcov
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.iml
+.DS_Store
+Thumbs.db
+
+# =========================
+# Databases / local data
+# =========================
+*.sqlite
+*.sqlite3
+*.db
+
+# =========================
+# Misc
+# =========================
+*.pem
+*.key
+*.local
+report/
+.DS_Store
+Thumbs.db
