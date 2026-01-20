@@ -38,6 +38,26 @@ app.get("/api/requests", async (_req, res) => {
   }
 });
 
+app.get("/api/audit", async (req, res) => {
+  const limitParam = req.query.limit;
+  const limitRaw = Array.isArray(limitParam) ? limitParam[0] : limitParam;
+  const limit = Math.max(1, Math.min(200, Number(limitRaw ?? 50) || 50));
+
+  try {
+    const result = await pool.query(
+      `SELECT id, created_at, action, entity_type, entity_id, actor_id
+       FROM audit_logs
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit]
+    );
+    res.json({ items: result.rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to load audit logs" });
+  }
+});
+
 
 const port = Number(process.env.PORT || 4000);
 app.listen(port, () => console.log(`API running on :${port}`));

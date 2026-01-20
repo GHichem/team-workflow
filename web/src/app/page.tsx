@@ -1,42 +1,54 @@
-import Image from "next/image";
-
 export default function HomePage() {
   return (
-    <main style={{ padding: 24, fontFamily: "system-ui" }}>
-      <h1 style={{ fontSize: 34, marginBottom: 8 }}>Team Workflow</h1>
-      <p style={{ opacity: 0.85, marginBottom: 18 }}>
-        Mini SaaS demo: Requests + Audit Log (Next.js + Node/Express + Postgres).
+    <section
+      style={{
+        border: "1px solid var(--border)",
+        borderRadius: 16,
+        padding: 18,
+        background: "var(--card)",
+      }}
+    >
+      <h1 style={{ fontSize: 34, margin: 0 }}>Team Workflow</h1>
+      <p style={{ marginTop: 10, color: "var(--muted)", lineHeight: 1.5 }}>
+        A small internal tool that demonstrates real-world fullstack work:
+        Requests + Audit Log, backed by a REST API and PostgreSQL.
       </p>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
+      <ul style={{ color: "var(--muted)", lineHeight: 1.7 }}>
+        <li>Create and track requests</li>
+        <li>Update status and priority</li>
+        <li>See an audit trail of changes</li>
+      </ul>
+
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
         <a
           href="/requests"
           style={{
-            padding: "10px 14px",
-            border: "1px solid #ddd",
-            borderRadius: 10,
             textDecoration: "none",
+            padding: "10px 14px",
+            borderRadius: 12,
+            background: "var(--c-pink)",
+            color: "#111",
+            fontWeight: 800,
           }}
         >
           View Requests
         </a>
-
         <a
           href="/audit"
           style={{
-            padding: "10px 14px",
-            border: "1px solid #ddd",
-            borderRadius: 10,
             textDecoration: "none",
+            padding: "10px 14px",
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "transparent",
+            fontWeight: 700,
           }}
         >
           View Audit Log
         </a>
       </div>
 
-      <div style={{ fontSize: 13, opacity: 0.7 }}>
-        Stack: Next.js (React) · Node.js (Express) · PostgreSQL (Docker) · REST API
-      </div>
-    </main>
+    </section>
   );
 }
