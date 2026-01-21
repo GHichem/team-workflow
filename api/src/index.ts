@@ -46,7 +46,7 @@ app.get("/api/audit", async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT id, created_at, action, entity_type, entity_id, actor_id
+      `SELECT id, created_at, action, entity_type, entity_id, entity_label, actor_id, before_json, after_json
        FROM audit_logs
        ORDER BY created_at DESC
        LIMIT $1`,
@@ -81,21 +81,74 @@ app.post("/api/requests", async (req, res) => {
     );
 
     await pool.query(
-      `INSERT INTO audit_logs
-        (id, workspace_id, actor_id, action, entity_type, entity_id, after_json)
-       VALUES
-        ($1, 'ws_demo', 'u_demo', 'CREATE', 'request', $2, $3::jsonb)`,
-      [
-        randomUUID(),
-        id,
-        JSON.stringify({ title, description, priority, status: "OPEN" }),
-      ]
-    );
+  `INSERT INTO audit_logs
+    (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, after_json)
+   VALUES
+    ($1, 'ws_demo', 'u_demo', 'CREATE', 'request', $2, $3, $4::jsonb)`,
+  [
+    randomUUID(),
+    id,
+    title, // <-- entity_label
+    JSON.stringify({ title, description, priority, status: "OPEN" }),
+  ]
+);
 
     res.status(201).json({ id });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to create request" });
+  }
+});
+
+app.patch("/api/requests/:id/status", async (req, res) => {
+  const id = String(req.params.id);
+  const status = String(req.body?.status ?? "").toUpperCase();
+
+  const allowed = new Set(["OPEN", "IN_REVIEW", "APPROVED", "REJECTED"]);
+  if (!allowed.has(status)) {
+    return res.status(400).json({ error: "status must be OPEN|IN_REVIEW|APPROVED|REJECTED" });
+  }
+
+  try {
+    // 1) read current status (before)
+    const beforeRes = await pool.query(
+      "SELECT title, status FROM requests WHERE id = $1",
+      [id]
+    );
+    if (beforeRes.rowCount === 0) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const beforeStatus = beforeRes.rows[0].status;
+    const beforeTitle = beforeRes.rows[0].title;
+
+
+    // 2) update
+    await pool.query(
+      "UPDATE requests SET status = $1, updated_at = now() WHERE id = $2",
+      [status, id]
+    );
+
+    // 3) audit diff (before/after)
+await pool.query(
+  `INSERT INTO audit_logs
+    (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, before_json, after_json)
+   VALUES
+    ($1, 'ws_demo', 'u_demo', 'STATUS_CHANGE', 'request', $2, $3, $4::jsonb, $5::jsonb)`,
+  [
+    randomUUID(),                 // $1
+    id,                           // $2
+    beforeTitle,                  // $3
+    JSON.stringify({ status: beforeStatus }), // $4
+    JSON.stringify({ status }),               // $5
+  ]
+);
+
+
+
+    res.json({ ok: true, before: beforeStatus, after: status });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to update status" });
   }
 });
 

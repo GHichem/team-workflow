@@ -1,4 +1,6 @@
 import RequestCreateForm from "../components/RequestCreateForm";
+import RequestStatusSelect from "../components/RequestStatusSelect";
+
 
 type RequestItem = {
   id: string;
@@ -41,6 +43,13 @@ export default async function RequestsPage() {
             }}
           >
             <div style={{ fontWeight: 700 }}>{r.title}</div>
+                <div style={{ marginTop: 8 }}>
+      <RequestStatusSelect
+        apiBase={base}
+        requestId={r.id}
+        initialStatus={r.status}
+      />
+    </div>
             <div style={{ opacity: 0.8, marginTop: 6 }}>
               Status: <b>{r.status}</b> · Priority: <b>{r.priority}</b>
             </div>
