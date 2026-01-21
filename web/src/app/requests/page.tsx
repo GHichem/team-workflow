@@ -1,3 +1,5 @@
+import RequestCreateForm from "../components/RequestCreateForm";
+
 type RequestItem = {
   id: string;
   title: string;
@@ -25,6 +27,8 @@ export default async function RequestsPage() {
   return (
     <main style={{ padding: 24, fontFamily: "system-ui" }}>
       <h1 style={{ fontSize: 28, marginBottom: 12 }}>Requests</h1>
+      
+      <RequestCreateForm apiBase={base} />
 
       <ul style={{ display: "grid", gap: 10, padding: 0, listStyle: "none" }}>
         {data.items.map((r) => (

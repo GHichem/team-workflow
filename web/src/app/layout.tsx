@@ -1,4 +1,5 @@
 import "./globals.css";
+import Link from "next/link";
 
 export const metadata = {
   title: "Team Workflow",
@@ -34,12 +35,12 @@ export default function RootLayout({
               gap: 12,
             }}
           >
-            <a href="/" style={{ textDecoration: "none", fontWeight: 800 }}>
+            <Link href="/" style={{ textDecoration: "none", fontWeight: 800 }}>
               <span style={{ color: "var(--c-pink)" }}>●</span> Team Workflow
-            </a>
+            </Link>
 
             <nav style={{ display: "flex", gap: 10 }}>
-              <a
+              <Link
                 href="/requests"
                 style={{
                   textDecoration: "none",
@@ -49,8 +50,8 @@ export default function RootLayout({
                 }}
               >
                 Requests
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/audit"
                 style={{
                   textDecoration: "none",
@@ -60,7 +61,7 @@ export default function RootLayout({
                 }}
               >
                 Audit Log
-              </a>
+              </Link>
             </nav>
           </div>
         </header>

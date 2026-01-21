@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <section
@@ -21,7 +23,7 @@ export default function HomePage() {
       </ul>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
-        <a
+        <Link
           href="/requests"
           style={{
             textDecoration: "none",
@@ -33,8 +35,8 @@ export default function HomePage() {
           }}
         >
           View Requests
-        </a>
-        <a
+        </Link>
+        <Link
           href="/audit"
           style={{
             textDecoration: "none",
@@ -46,7 +48,7 @@ export default function HomePage() {
           }}
         >
           View Audit Log
-        </a>
+        </Link>
       </div>
 
     </section>
