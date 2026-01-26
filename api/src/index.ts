@@ -27,7 +27,7 @@ app.get("/health", (_req, res) => {
 app.get("/api/requests", async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, title, status, priority, created_at, updated_at
+      `SELECT id, title, description, status, priority, created_at, updated_at
        FROM requests
        ORDER BY created_at DESC
        LIMIT 50`
@@ -151,6 +151,95 @@ await pool.query(
     res.status(500).json({ error: "Failed to update status" });
   }
 });
+
+app.get("/api/requests/:id", async (req, res) => {
+  const id = String(req.params.id);
+
+  try {
+    const result = await pool.query(
+      `SELECT id, title, description, status, priority, created_at, updated_at
+       FROM requests
+       WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    res.json({ item: result.rows[0] });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to load request" });
+  }
+});
+
+app.get("/api/requests/:id/comments", async (req, res) => {
+  const requestId = String(req.params.id);
+
+  try {
+    const result = await pool.query(
+      `SELECT id, request_id, author_id, message, created_at
+       FROM comments
+       WHERE request_id = $1
+       ORDER BY created_at ASC`,
+      [requestId]
+    );
+
+    res.json({ items: result.rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to load comments" });
+  }
+});
+
+app.post("/api/requests/:id/comments", async (req, res) => {
+  const requestId = String(req.params.id);
+  const message = String(req.body?.message ?? "").trim();
+
+  if (!message) return res.status(400).json({ error: "message is required" });
+
+  try {
+    // make sure request exists and get title for entity_label
+    const reqRes = await pool.query(
+      "SELECT title FROM requests WHERE id = $1",
+      [requestId]
+    );
+    if (reqRes.rowCount === 0) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const requestTitle = reqRes.rows[0].title;
+
+    const commentId = randomUUID();
+
+    await pool.query(
+      `INSERT INTO comments (id, request_id, author_id, message)
+       VALUES ($1, $2, 'u_demo', $3)`,
+      [commentId, requestId, message]
+    );
+
+    // audit entry (user-readable)
+    await pool.query(
+      `INSERT INTO audit_logs
+        (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, after_json)
+       VALUES
+        ($1, 'ws_demo', 'u_demo', 'COMMENT_CREATE', 'request', $2, $3, $4::jsonb)`,
+      [
+        randomUUID(),
+        requestId,
+        requestTitle,
+        JSON.stringify({ message }),
+      ]
+    );
+
+    res.status(201).json({ id: commentId });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to create comment" });
+  }
+});
+
+
 
 
 const port = Number(process.env.PORT || 4000);

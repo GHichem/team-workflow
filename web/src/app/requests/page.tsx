@@ -2,6 +2,7 @@ import RequestCreateForm from "../components/RequestCreateForm";
 import RequestStatusSelect from "../components/RequestStatusSelect";
 import { getRequests } from "../lib/api";
 import type { RequestItem } from "../lib/types";
+import Link from "next/link";
 
 export default async function RequestsPage() {
   const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000";
@@ -40,7 +41,18 @@ return (
                 background: "var(--card)",
               }}
             >
-              <div style={{ fontWeight: 700 }}>{r.title}</div>
+              <div style={{ fontWeight: 700 }}>
+  <Link href={`/requests/${r.id}`} style={{ textDecoration: "none" }}>
+    {r.title}
+  </Link>
+</div>
+
+              {r.description && (
+  <div style={{ marginTop: 6, color: "var(--muted)" }}>
+    {r.description}
+  </div>
+)}
+
 
               <div style={{ marginTop: 8 }}>
                 <RequestStatusSelect

@@ -11,6 +11,8 @@ export default function RequestCreateForm({ apiBase }: Props) {
   const [priority, setPriority] = useState("MEDIUM");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +29,12 @@ export default function RequestCreateForm({ apiBase }: Props) {
       const res = await fetch(`${apiBase}/api/requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: cleanTitle, priority }),
+       body: JSON.stringify({
+  title: cleanTitle,
+  priority,
+  description: description.trim() ? description.trim() : null,
+}),
+
       });
 
       if (!res.ok) {
@@ -37,6 +44,7 @@ export default function RequestCreateForm({ apiBase }: Props) {
       }
 
       setTitle("");
+      setDescription("");
       setPriority("MEDIUM");
       setMsg("Created ✅ Refreshing...");
       // simplest refresh: reload the page to re-fetch server data
@@ -108,6 +116,24 @@ export default function RequestCreateForm({ apiBase }: Props) {
         >
           {loading ? "Creating..." : "Create"}
         </button>
+        <textarea
+  value={description}
+  onChange={(e) => setDescription(e.target.value)}
+  placeholder="Description (details, acceptance criteria, UI notes...)"
+  rows={3}
+  style={{
+    width: "100%",
+    marginTop: 10,
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid var(--border)",
+    background: "transparent",
+    color: "var(--text)",
+    outline: "none",
+    resize: "vertical",
+  }}
+/>
+
       </div>
 
       {msg && (
