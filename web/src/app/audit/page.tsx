@@ -1,20 +1,15 @@
-type AuditItem = {
-  id: string;
-  created_at: string;
-  action: string;
-  entity_type: string;
-  entity_id: string | null;
-  entity_label: string | null;
-  actor_id: string | null;
-  before_json: any | null;
-  after_json: any | null;
-};
+import { getAudit } from "../lib/api";
+import type { AuditItem } from "../lib/types";
 
 export default async function AuditPage() {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000";
-  const res = await fetch(`${base}/api/audit?limit=50`, { cache: "no-store" });
+  let data: { items: AuditItem[] } | null = null;
+let error: string | null = null;
 
-  const data = res.ok ? ((await res.json()) as { items: AuditItem[] }) : null;
+try {
+  data = await getAudit(50);
+} catch (e: any) {
+  error = e?.message ?? "Failed to load audit logs";
+}
 
   return (
     <section
@@ -27,11 +22,10 @@ export default async function AuditPage() {
     >
       <h1 style={{ marginTop: 0 }}>Audit Log</h1>
 
-      {!res.ok ? (
-        <p style={{ color: "var(--muted)" }}>
-          Failed to load audit logs. Status: {res.status}
-        </p>
-      ) : data!.items.length === 0 ? (
+{error ? (
+  <p style={{ color: "var(--muted)" }}>{error}</p>
+) : data!.items.length === 0 ? (
+
         <p style={{ color: "var(--muted)" }}>
           No audit entries yet. Next: we will write audit entries when creating
           or updating requests.
