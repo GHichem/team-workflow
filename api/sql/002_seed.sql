@@ -4,13 +4,17 @@ VALUES ('ws_demo', 'Demo Workspace')
 ON CONFLICT (id) DO NOTHING;
 
 -- User
-INSERT INTO users (id, email, name)
-VALUES ('u_demo', 'demo@demo.com', 'Demo User')
+INSERT INTO users (id, email, name) VALUES
+('u_demo', 'demo@demo.com', 'Demo User'),
+('u_alice', 'alice@demo.com', 'Alice'),
+('u_bob', 'bob@demo.com', 'Bob')
 ON CONFLICT (id) DO NOTHING;
 
 -- Membership
-INSERT INTO memberships (id, user_id, workspace_id, role)
-VALUES ('m_demo', 'u_demo', 'ws_demo', 'ADMIN')
+INSERT INTO memberships (id, user_id, workspace_id, role) VALUES
+('m_demo', 'u_demo', 'ws_demo', 'ADMIN'),
+('m_alice', 'u_alice', 'ws_demo', 'MEMBER'),
+('m_bob', 'u_bob', 'ws_demo', 'MEMBER')
 ON CONFLICT (id) DO NOTHING;
 
 -- Requests

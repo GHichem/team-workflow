@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 type Props = {
   apiBase: string;
@@ -12,6 +14,18 @@ export default function RequestCreateForm({ apiBase }: Props) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+const [assigneeId, setAssigneeId] = useState("u_demo");
+
+  const router = useRouter();
+
+  useEffect(() => {
+  fetch(`${apiBase}/api/users`)
+    .then((r) => r.json())
+    .then((d) => setUsers(d.items ?? []))
+    .catch(() => setUsers([]));
+}, [apiBase]);
+
 
 
   async function onSubmit(e: React.FormEvent) {
@@ -33,6 +47,7 @@ export default function RequestCreateForm({ apiBase }: Props) {
   title: cleanTitle,
   priority,
   description: description.trim() ? description.trim() : null,
+  assignee_id: assigneeId,
 }),
 
       });
@@ -46,9 +61,10 @@ export default function RequestCreateForm({ apiBase }: Props) {
       setTitle("");
       setDescription("");
       setPriority("MEDIUM");
-      setMsg("Created ✅ Refreshing...");
-      // simplest refresh: reload the page to re-fetch server data
-      window.location.reload();
+setMsg("Created ✅");
+router.refresh();
+setTimeout(() => setMsg(null), 1200);
+
     } catch (err) {
       setMsg("Network error. Is the API running?");
     } finally {
@@ -99,6 +115,27 @@ export default function RequestCreateForm({ apiBase }: Props) {
           <option value="MEDIUM">MEDIUM</option>
           <option value="HIGH">HIGH</option>
         </select>
+
+        <select
+  value={assigneeId}
+  onChange={(e) => setAssigneeId(e.target.value)}
+  style={{
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid var(--border)",
+    background: "transparent",
+    color: "var(--text)",
+    outline: "none",
+  }}
+>
+  <option value="u_demo">Demo User</option>
+  {users.map((u) => (
+    <option key={u.id} value={u.id}>
+      {u.name}
+    </option>
+  ))}
+</select>
+
 
         <button
           type="submit"

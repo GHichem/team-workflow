@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   apiBase: string;
@@ -11,6 +12,7 @@ export default function CommentForm({ apiBase, requestId }: Props) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const router = useRouter();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +39,7 @@ export default function CommentForm({ apiBase, requestId }: Props) {
       }
 
       setMessage("");
-      window.location.reload();
+      router.refresh();
     } catch {
       setMsg("Network error");
     } finally {

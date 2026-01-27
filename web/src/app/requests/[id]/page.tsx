@@ -42,6 +42,11 @@ export default async function RequestDetailPage({
           {item!.description}
         </p>
       )}
+<div style={{ marginTop: 6, color: "var(--muted)" }}>
+  Assignee: <b style={{ color: "var(--text)" }}>{(item as any).assignee_name ?? "-"}</b>
+</div>
+
+
 
       <div style={{ display: "flex", gap: 12, color: "var(--muted)", marginTop: 10 }}>
         <div>Status: <b style={{ color: "var(--text)" }}>{item!.status}</b></div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 type Props = {
   apiBase: string;
@@ -18,6 +20,7 @@ export default function RequestStatusSelect({
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const router = useRouter();
 
   async function update(next: string) {
     setMsg(null);
@@ -39,7 +42,7 @@ export default function RequestStatusSelect({
 
       setStatus(next);
       // simplest: reload so server-rendered list stays consistent
-      window.location.reload();
+      router.refresh();
     } catch {
       setMsg("Network error");
     } finally {

@@ -27,3 +27,10 @@ export async function getComments(id: string): Promise<{ items: CommentItem[] }>
   if (!res.ok) throw new Error(`Failed to load comments (${res.status})`);
   return res.json();
 }
+
+export async function getUsers(): Promise<{ items: { id: string; name: string }[] }> {
+  const res = await fetch(`${base}/api/users`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load users (${res.status})`);
+  return res.json();
+}
+
