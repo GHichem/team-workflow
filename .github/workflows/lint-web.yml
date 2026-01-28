@@ -1,0 +1,30 @@
+name: Lint Web
+
+on:
+  push:
+    paths:
+      - 'web/**'
+
+jobs:
+  lint:
+    name: Lint frontend in web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Run ESLint
+        run: npm run lint
