@@ -4,7 +4,7 @@ import type { AuditItem } from "../lib/types";
 export default async function AuditPage() {
   let data: { items: AuditItem[] } | null = null;
 let error: string | null = null;
-
+// Load audit logs
 try {
   data = await getAudit(50);
 } catch (e: any) {
