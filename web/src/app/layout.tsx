@@ -1,5 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
+import UserSwitcher from "./components/UserSwitcher";
 
 export const metadata = {
   title: "Team Workflow",
@@ -11,64 +12,44 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000";
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "system-ui" }}>
-        <header
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-            background: "rgba(11,11,15,0.85)",
-            backdropFilter: "blur(10px)",
-            borderBottom: "1px solid var(--border)",
-          }}
-        >
-          <div
-            style={{
-              maxWidth: 980,
-              margin: "0 auto",
-              padding: "14px 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            <Link href="/" style={{ textDecoration: "none", fontWeight: 800 }}>
-              <span style={{ color: "var(--c-pink)" }}>●</span> Team Workflow
+      <body className="min-h-screen bg-site-bg text-site-text" style={{ fontFamily: 'system-ui' }}>
+        <header className="sticky top-0 z-20 bg-site-card/80 backdrop-blur-sm border-b border-site-border">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <Link href="/" className="flex items-center gap-2 font-extrabold no-underline">
+              <span className="text-palette-pink">●</span>
+              <span>Team Workflow</span>
             </Link>
 
-            <nav style={{ display: "flex", gap: 10 }}>
+            <nav className="flex gap-2">
               <Link
                 href="/requests"
-                style={{
-                  textDecoration: "none",
-                  padding: "8px 10px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border)",
-                }}
+                className="px-3 py-1 rounded-xl border border-site-border hover:bg-site-card/50"
               >
                 Requests
               </Link>
               <Link
                 href="/audit"
-                style={{
-                  textDecoration: "none",
-                  padding: "8px 10px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border)",
-                }}
+                className="px-3 py-1 rounded-xl border border-site-border hover:bg-site-card/50"
               >
                 Audit Log
               </Link>
             </nav>
+            <UserSwitcher apiBase={base} />
+          </div>
+          <div className="max-w-4xl mx-auto px-4 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-palette-pink border border-site-border" />
+              <div className="w-8 h-8 rounded-full bg-palette-sand border border-site-border" />
+              <div className="w-8 h-8 rounded-full bg-palette-cream border border-site-border" />
+              <div className="w-8 h-8 rounded-full bg-palette-green border border-site-border" />
+            </div>
           </div>
         </header>
 
-        <main style={{ maxWidth: 980, margin: "0 auto", padding: "18px 16px" }}>
-          {children}
-        </main>
+        <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
       </body>
     </html>
   );

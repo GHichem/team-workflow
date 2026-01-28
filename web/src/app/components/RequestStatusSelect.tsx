@@ -34,8 +34,8 @@ export default function RequestStatusSelect({
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        setMsg(err?.error ?? `Failed (${res.status})`);
+        const body = await res.json().catch(() => null);
+        setMsg(body?.error ?? `Failed (${res.status})`);
         setLoading(false);
         return;
       }
@@ -51,20 +51,12 @@ export default function RequestStatusSelect({
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex items-center gap-3">
       <select
         value={status}
         disabled={loading}
         onChange={(e) => update(e.target.value)}
-        style={{
-          padding: "8px 10px",
-          borderRadius: 12,
-          border: "1px solid var(--border)",
-          background: "transparent",
-          color: "var(--text)",
-          outline: "none",
-          opacity: loading ? 0.7 : 1,
-        }}
+        className={`px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none ${loading ? 'opacity-70' : 'opacity-100'}`}
       >
         {statuses.map((s) => (
           <option key={s} value={s}>
@@ -73,7 +65,7 @@ export default function RequestStatusSelect({
         ))}
       </select>
 
-      {msg && <span style={{ color: "var(--muted)", fontSize: 12 }}>{msg}</span>}
+      {msg && <span className="text-site-muted text-sm">{msg}</span>}
     </div>
   );
 }

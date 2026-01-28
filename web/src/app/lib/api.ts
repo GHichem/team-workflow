@@ -10,8 +10,8 @@ export async function getRequests(): Promise<{ items: RequestItem[] }> {
   return res.json();
 }
 
-export async function getAudit(limit = 50): Promise<{ items: AuditItem[] }> {
-  const res = await fetch(`${base}/api/audit?limit=${limit}`, { cache: "no-store" });
+export async function getAudit(limit = 50, offset = 0): Promise<{ items: AuditItem[] }> {
+  const res = await fetch(`${base}/api/audit?limit=${limit}&offset=${offset}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load audit (${res.status})`);
   return res.json();
 }

@@ -48,41 +48,15 @@ export default function CommentForm({ apiBase, requestId }: Props) {
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ marginBottom: 12 }}>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Write a comment..."
-          style={{
-            flex: "1 1 280px",
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "transparent",
-            color: "var(--text)",
-            outline: "none",
-          }}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 12,
-            border: "none",
-            background: "var(--c-pink)",
-            color: "#111",
-            fontWeight: 800,
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
+    <form onSubmit={onSubmit} className="mb-3">
+      <div className="flex gap-3 flex-wrap">
+        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Write a comment..." className="flex-1 min-w-[280px] px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none" />
+        <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg bg-palette-pink text-black font-extrabold disabled:opacity-60">
           {loading ? "Posting..." : "Post"}
         </button>
       </div>
 
-      {msg && <div style={{ marginTop: 8, color: "var(--muted)", fontSize: 13 }}>{msg}</div>}
+      {msg && <div className="mt-2 text-site-muted text-sm">{msg}</div>}
     </form>
   );
 }

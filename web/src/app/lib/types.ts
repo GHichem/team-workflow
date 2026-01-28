@@ -6,6 +6,7 @@ export type RequestItem = {
   priority: string;
   created_at: string;
   updated_at: string;
+  assignee_name?: string | null;
 };
 
 
@@ -17,8 +18,8 @@ export type AuditItem = {
   entity_id: string | null;
   entity_label: string | null;
   actor_id: string | null;
-  before_json: any | null;
-  after_json: any | null;
+  before_json: Record<string, unknown> | null;
+  after_json: Record<string, unknown> | null;
 };
 
 export type CommentItem = {

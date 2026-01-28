@@ -45,14 +45,17 @@ app.get("/api/audit", async (req, res) => {
   const limitParam = req.query.limit;
   const limitRaw = Array.isArray(limitParam) ? limitParam[0] : limitParam;
   const limit = Math.max(1, Math.min(200, Number(limitRaw ?? 50) || 50));
+  const offsetParam = req.query.offset;
+  const offsetRaw = Array.isArray(offsetParam) ? offsetParam[0] : offsetParam;
+  const offset = Math.max(0, Number(offsetRaw ?? 0) || 0);
 
   try {
     const result = await pool.query(
       `SELECT id, created_at, action, entity_type, entity_id, entity_label, actor_id, before_json, after_json
        FROM audit_logs
        ORDER BY created_at DESC
-       LIMIT $1`,
-      [limit]
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
     res.json({ items: result.rows });
   } catch (e) {

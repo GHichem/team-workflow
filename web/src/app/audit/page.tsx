@@ -1,87 +1,101 @@
+import Link from "next/link";
 import { getAudit } from "../lib/api";
 import type { AuditItem } from "../lib/types";
 
-export default async function AuditPage() {
-  let data: { items: AuditItem[] } | null = null;
-let error: string | null = null;
-// Load audit logs
-try {
-  data = await getAudit(50);
-} catch (e: any) {
-  error = e?.message ?? "Failed to load audit logs";
+function getStatusFromJson(json?: Record<string, unknown> | null) {
+  if (!json) return "?";
+  const s = json["status"];
+  return typeof s === "string" ? s : String(s ?? "?");
 }
 
+type Props = {
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+export default async function AuditPage({ searchParams }: Props) {
+  const perPage = 10;
+  const pageRaw = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
+  const page = Math.max(1, Number(pageRaw ?? 1) || 1);
+  const offset = (page - 1) * perPage;
+
+  let data: { items: AuditItem[] } | null = null;
+  let error: string | null = null;
+
+  try {
+    // fetch one extra to detect `next` page
+    data = await getAudit(perPage + 1, offset);
+  } catch (e: unknown) {
+    if (e instanceof Error) error = e.message;
+    else error = String(e ?? "Failed to load audit logs");
+  }
+
+  const items = data?.items ?? [];
+  const hasNext = items.length > perPage;
+  const pageItems = hasNext ? items.slice(0, perPage) : items;
+
   return (
-    <section
-      style={{
-        border: "1px solid var(--border)",
-        borderRadius: 16,
-        padding: 18,
-        background: "var(--card)",
-      }}
-    >
-      <h1 style={{ marginTop: 0 }}>Audit Log</h1>
+    <section className="bg-site-card border border-site-border rounded-2xl p-4">
+      <h1 className="text-2xl font-bold">Audit Log</h1>
 
-{error ? (
-  <p style={{ color: "var(--muted)" }}>{error}</p>
-) : data!.items.length === 0 ? (
-
-        <p style={{ color: "var(--muted)" }}>
-          No audit entries yet. Next: we will write audit entries when creating
-          or updating requests.
-        </p>
+      {error ? (
+        <p className="text-site-muted mt-2">{error}</p>
+      ) : pageItems.length === 0 ? (
+        <p className="text-site-muted mt-2">No audit entries yet. Next: we will write audit entries when creating or updating requests.</p>
       ) : (
-        <div style={{ overflowX: "auto", marginTop: 12 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-<tr style={{ textAlign: "left", color: "var(--muted)" }}>
-  <th style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>Time</th>
-  <th style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>Action</th>
-  <th style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>Entity</th>
-  <th style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>Request</th>
-  <th style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>Change</th>
-  <th style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>Actor</th>
-</tr>
+        <>
+          <div className="overflow-x-auto mt-3">
+            <table className="audit-table w-full">
+              <thead>
+                <tr className="text-left text-site-muted">
+                  <th className="py-3 px-4">Time</th>
+                  <th className="py-3 px-4">Action</th>
+                  <th className="py-3 px-4">Entity</th>
+                  <th className="py-3 px-4">Request</th>
+                  <th className="py-3 px-4">Change</th>
+                  <th className="py-3 px-4">Actor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((x) => {
+                  const requestName = x.entity_label ?? x.entity_id ?? "-";
+                  const change =
+                    x.action === "STATUS_CHANGE"
+                      ? `${getStatusFromJson(x.before_json)} → ${getStatusFromJson(x.after_json)}`
+                      : x.action === "CREATE"
+                      ? "Created"
+                      : "-";
 
-            </thead>
-            <tbody>
-  {data!.items.map((x) => {
-    const requestName = x.entity_label ?? x.entity_id ?? "-";
+                  return (
+                    <tr key={x.id} className="even:bg-site-card/40 hover:shadow-sm">
+                      <td className="py-3 px-4 align-top">{new Date(x.created_at).toLocaleString()}</td>
+                      <td className="py-3 px-4 align-top font-semibold">{x.action}</td>
+                      <td className="py-3 px-4 align-top">{x.entity_type}</td>
+                      <td className="py-3 px-4 align-top">{requestName}</td>
+                      <td className="py-3 px-4 align-top">{change}</td>
+                      <td className="py-3 px-4 align-top font-mono text-site-muted">{x.actor_id ?? "-"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-    const change =
-      x.action === "STATUS_CHANGE"
-        ? `${x.before_json?.status ?? "?"} → ${x.after_json?.status ?? "?"}`
-        : x.action === "CREATE"
-        ? "Created"
-        : "-";
+          <div className="mt-4 flex items-center gap-3">
+            {page > 1 ? (
+              <Link href={`/audit?page=${page - 1}`} className="btn-outline no-underline">← Previous</Link>
+            ) : (
+              <button className="btn-outline opacity-50 cursor-default" disabled>← Previous</button>
+            )}
 
-    return (
-      <tr key={x.id}>
-        <td style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>
-          {new Date(x.created_at).toLocaleString()}
-        </td>
-        <td style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>
-          {x.action}
-        </td>
-        <td style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>
-          {x.entity_type}
-        </td>
-        <td style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>
-          {requestName}
-        </td>
-        <td style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)" }}>
-          {change}
-        </td>
-        <td style={{ padding: "10px 8px", borderBottom: "1px solid var(--border)", fontFamily: "ui-monospace, Menlo, monospace" }}>
-          {x.actor_id ?? "-"}
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
+            <div className="text-site-muted">Page {page}</div>
 
-          </table>
-        </div>
+            {hasNext ? (
+              <Link href={`/audit?page=${page + 1}`} className="btn-outline no-underline">Next →</Link>
+            ) : (
+              <button className="btn-outline opacity-50 cursor-default" disabled>Next →</button>
+            )}
+          </div>
+        </>
       )}
     </section>
   );
