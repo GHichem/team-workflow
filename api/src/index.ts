@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -43,8 +43,8 @@ app.get("/api/requests", async (_req, res) => {
   }
 });
 
-function actorIdFromReq(req: any) {
-  const h = req.headers?.["x-actor-id"];
+function actorIdFromReq(req: Request) {
+  const h = (req.headers as Record<string, string | string[] | undefined>)?.["x-actor-id"];
   const raw = Array.isArray(h) ? h[0] : h;
   return String(raw ?? "u_demo");
 }
@@ -87,7 +87,7 @@ app.get("/api/audit", async (req, res) => {
     const q = req.query.q ? String(Array.isArray(req.query.q) ? req.query.q[0] : req.query.q) : null;
 
     const where: string[] = [];
-    const params: any[] = [];
+    const params: (string | number)[] = [];
     let idx = 1;
     if (actorFilter) {
       where.push(`actor_id = $${idx++}`);
