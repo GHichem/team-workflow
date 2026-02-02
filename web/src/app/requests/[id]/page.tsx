@@ -1,4 +1,4 @@
-import { getComments, getRequest } from "../../lib/api";
+import { getComments, getRequest, getUsers } from "../../lib/api";
 import type { CommentItem, RequestItem } from "../../lib/types";
 import CommentForm from "../../components/CommentForm";
 
@@ -18,6 +18,15 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   } catch (e: unknown) {
     if (e instanceof Error) error = e.message;
     else error = String(e ?? "Failed to load request");
+  }
+
+  // fetch user list to resolve author names for comments (server-side)
+  let usersMap: Map<string, string> | null = null;
+  try {
+    const u = await getUsers();
+    usersMap = new Map((u.items ?? []).map((x: { id: string; name: string }) => [x.id, x.name]));
+  } catch {
+    usersMap = null;
   }
 
   if (error) {
@@ -55,8 +64,13 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
           <ul className="grid gap-3 list-none p-0">
             {comments.map((c) => (
               <li key={c.id} className="border border-site-border rounded-lg p-3 bg-site-card">
-                <div className="text-site-muted text-sm">{new Date(c.created_at).toLocaleString()} · {c.author_id}</div>
-                <div className="mt-2">{c.message}</div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <div className="font-semibold text-site-text">{usersMap?.get(c.author_id ?? "") ?? c.author_id}</div>
+                    <div className="text-site-muted text-sm">{formatRelative(c.created_at)}</div>
+                  </div>
+                  <div className="mt-2 text-site-text leading-6">{c.message}</div>
+                </div>
               </li>
             ))}
           </ul>
@@ -64,4 +78,22 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
       </section>
     </main>
   );
+}
+
+function formatRelative(iso?: string | null) {
+  if (!iso) return "";
+  try {
+    const then = new Date(iso).getTime();
+    const now = Date.now();
+    const s = Math.max(0, Math.floor((now - then) / 1000));
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h`;
+    const d = Math.floor(h / 24);
+    return `${d}d`;
+  } catch {
+    return "";
+  }
 }

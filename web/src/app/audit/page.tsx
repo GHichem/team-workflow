@@ -1,5 +1,6 @@
-import Link from "next/link";
-import { getAudit } from "../lib/api";
+import { getAudit, getUsers } from "../lib/api";
+import PaginationControls from "./PaginationControls";
+import FilterControls from "./FilterControls";
 import type { AuditItem } from "../lib/types";
 
 function getStatusFromJson(json?: Record<string, unknown> | null) {
@@ -13,8 +14,10 @@ type Props = {
 };
 
 export default async function AuditPage({ searchParams }: Props) {
+  // `searchParams` may be a Promise when navigated client-side; await it
+  const sp = await (searchParams as any);
   const perPage = 10;
-  const pageRaw = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
+  const pageRaw = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
   const page = Math.max(1, Number(pageRaw ?? 1) || 1);
   const offset = (page - 1) * perPage;
 
@@ -23,7 +26,33 @@ export default async function AuditPage({ searchParams }: Props) {
 
   try {
     // fetch one extra to detect `next` page
-    data = await getAudit(perPage + 1, offset);
+    const filters: { action?: string; actor_id?: string; q?: string } = {};
+    if (sp?.action) filters.action = Array.isArray(sp.action) ? sp.action[0] : sp.action;
+    if (sp?.actor_id) filters.actor_id = Array.isArray(sp.actor_id) ? sp.actor_id[0] : sp.actor_id;
+    if (sp?.q) filters.q = Array.isArray(sp.q) ? sp.q[0] : sp.q;
+
+    // fetch audit entries and user list in parallel so we can display friendly names
+    const [auditRes, usersRes] = await Promise.all([getAudit(perPage + 1, offset, filters), getUsers()]);
+    data = auditRes;
+    const usersMap = new Map<string, string>((usersRes.items ?? []).map((u) => [u.id, u.name]));
+    // for any actor ids in the fetched audit items that aren't present in the
+    // initial users list, try a targeted lookup so we can show the correct name
+    const itemsNow = (auditRes.items ?? []) as any[];
+    const missing = Array.from(new Set(itemsNow.map((it) => it.actor_id).filter(Boolean))).filter((id) => !usersMap.has(id));
+    if (missing.length > 0) {
+      try {
+        const lookups = await Promise.all(missing.map((id) => getUsers(id)));
+        lookups.forEach((res) => {
+          (res.items ?? []).forEach((u) => usersMap.set(u.id, u.name));
+        });
+      } catch {
+        // ignore lookup failures, we'll fall back to id
+      }
+    }
+    // ensure the special demo admin id is shown as "Admin" in the UI
+    usersMap.set("u_demo", "Admin");
+    // attach usersMap to data for use when rendering
+    (data as any)._usersMap = usersMap;
   } catch (e: unknown) {
     if (e instanceof Error) error = e.message;
     else error = String(e ?? "Failed to load audit logs");
@@ -44,6 +73,7 @@ export default async function AuditPage({ searchParams }: Props) {
       ) : (
         <>
           <div className="overflow-x-auto mt-3">
+            <FilterControls />
             <table className="audit-table w-full">
               <thead>
                 <tr className="text-left text-site-muted">
@@ -72,7 +102,7 @@ export default async function AuditPage({ searchParams }: Props) {
                       <td className="py-3 px-4 align-top">{x.entity_type}</td>
                       <td className="py-3 px-4 align-top">{requestName}</td>
                       <td className="py-3 px-4 align-top">{change}</td>
-                      <td className="py-3 px-4 align-top font-mono text-site-muted">{x.actor_id ?? "-"}</td>
+                      <td className="py-3 px-4 align-top font-mono text-site-muted">{(((data as any)._usersMap?.get(x.actor_id ?? "") as string) ?? (x.actor_id === "u_demo" ? "Admin" : undefined) ?? x.actor_id) ?? "-"}</td>
                     </tr>
                   );
                 })}
@@ -80,21 +110,7 @@ export default async function AuditPage({ searchParams }: Props) {
             </table>
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
-            {page > 1 ? (
-              <Link href={`/audit?page=${page - 1}`} className="btn-outline no-underline">← Previous</Link>
-            ) : (
-              <button className="btn-outline opacity-50 cursor-default" disabled>← Previous</button>
-            )}
-
-            <div className="text-site-muted">Page {page}</div>
-
-            {hasNext ? (
-              <Link href={`/audit?page=${page + 1}`} className="btn-outline no-underline">Next →</Link>
-            ) : (
-              <button className="btn-outline opacity-50 cursor-default" disabled>Next →</button>
-            )}
-          </div>
+          <PaginationControls page={page} hasNext={hasNext} />
         </>
       )}
     </section>

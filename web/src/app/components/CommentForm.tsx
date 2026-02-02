@@ -26,11 +26,24 @@ export default function CommentForm({ apiBase, requestId }: Props) {
 
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/requests/${requestId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: clean }),
-      });
+        const actorId = (function getActorId() {
+          try {
+            const v = localStorage.getItem("view_as");
+            if (!v) return "u_demo";
+            const p = JSON.parse(v);
+            const id = p?.id ?? null;
+            if (!id || id === "ALL" || id === "admin") return "u_demo";
+            return id;
+          } catch {
+            return "u_demo";
+          }
+        })();
+
+        const res = await fetch(`${apiBase}/api/requests/${requestId}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-actor-id": actorId },
+          body: JSON.stringify({ message: clean }),
+        });
 
       if (!res.ok) {
         const err = await res.json().catch(() => null);
@@ -49,9 +62,14 @@ export default function CommentForm({ apiBase, requestId }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="mb-3">
-      <div className="flex gap-3 flex-wrap">
-        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Write a comment..." className="flex-1 min-w-[280px] px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none" />
-        <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg bg-palette-pink text-black font-extrabold disabled:opacity-60">
+      <div className="flex gap-3 flex-wrap items-center">
+        <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Write a comment..."
+          className="flex-1 min-w-[280px] px-3 py-2 rounded-lg border border-site-border bg-site-card text-site-text outline-none"
+        />
+        <button type="submit" disabled={loading} className="px-3 py-1 rounded-md bg-palette-pink text-black font-bold disabled:opacity-60">
           {loading ? "Posting..." : "Post"}
         </button>
       </div>

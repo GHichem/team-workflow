@@ -17,6 +17,8 @@ app.use(
   cors({
     origin: process.env.WEB_ORIGIN || "http://localhost:3000",
     credentials: true,
+    allowedHeaders: ["Content-Type", "X-Actor-Id"],
+    methods: ["GET", "POST", "PATCH", "OPTIONS"],
   })
 );
 
@@ -41,6 +43,25 @@ app.get("/api/requests", async (_req, res) => {
   }
 });
 
+function actorIdFromReq(req: any) {
+  const h = req.headers?.["x-actor-id"];
+  const raw = Array.isArray(h) ? h[0] : h;
+  return String(raw ?? "u_demo");
+}
+
+async function isAdmin(userId: string) {
+  try {
+    const r = await pool.query(
+      "SELECT role FROM memberships WHERE user_id = $1 AND workspace_id = 'ws_demo'",
+      [userId]
+    );
+    const role = r?.rows?.[0]?.role ?? "";
+    return (r?.rowCount ?? 0) > 0 && role === "ADMIN";
+  } catch {
+    return false;
+  }
+}
+
 app.get("/api/audit", async (req, res) => {
   const limitParam = req.query.limit;
   const limitRaw = Array.isArray(limitParam) ? limitParam[0] : limitParam;
@@ -50,13 +71,48 @@ app.get("/api/audit", async (req, res) => {
   const offset = Math.max(0, Number(offsetRaw ?? 0) || 0);
 
   try {
-    const result = await pool.query(
-      `SELECT id, created_at, action, entity_type, entity_id, entity_label, actor_id, before_json, after_json
-       FROM audit_logs
-       ORDER BY created_at DESC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
+    // enforce admin-only access to audit logs
+    const actorId = actorIdFromReq(req);
+    const mem = await pool.query(
+      "SELECT role FROM memberships WHERE user_id = $1 AND workspace_id = 'ws_demo'",
+      [actorId]
     );
+    if (mem.rowCount === 0 || (mem.rows[0].role ?? "") !== "ADMIN") {
+      return res.status(403).json({ error: "forbidden" });
+    }
+
+    // optional filters
+    const actorFilter = req.query.actor_id ? String(Array.isArray(req.query.actor_id) ? req.query.actor_id[0] : req.query.actor_id) : null;
+    const actionFilter = req.query.action ? String(Array.isArray(req.query.action) ? req.query.action[0] : req.query.action) : null;
+    const q = req.query.q ? String(Array.isArray(req.query.q) ? req.query.q[0] : req.query.q) : null;
+
+    const where: string[] = [];
+    const params: any[] = [];
+    let idx = 1;
+    if (actorFilter) {
+      where.push(`actor_id = $${idx++}`);
+      params.push(actorFilter);
+    }
+    if (actionFilter) {
+      where.push(`action = $${idx++}`);
+      params.push(actionFilter);
+    }
+    if (q) {
+      where.push(`(entity_label ILIKE $${idx} OR entity_type ILIKE $${idx})`);
+      params.push(`%${q}%`);
+      idx += 1;
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const sql = `SELECT id, created_at, action, entity_type, entity_id, entity_label, actor_id, before_json, after_json
+       FROM audit_logs
+       ${whereSql}
+       ORDER BY created_at DESC
+       LIMIT $${idx} OFFSET $${idx + 1}`;
+    params.push(limit, offset);
+
+    const result = await pool.query(sql, params);
     res.json({ items: result.rows });
   } catch (e) {
     console.error(e);
@@ -68,7 +124,8 @@ app.post("/api/requests", async (req, res) => {
   const title = String(req.body?.title ?? "").trim();
   const description = req.body?.description ? String(req.body.description) : null;
   const priority = String(req.body?.priority ?? "MEDIUM").toUpperCase();
-  const assigneeId = req.body?.assignee_id ? String(req.body.assignee_id) : "u_demo";
+  const actorId = actorIdFromReq(req);
+  const assigneeId = req.body?.assignee_id ? String(req.body.assignee_id) : actorId;
 
 
   const allowedPriorities = new Set(["LOW", "MEDIUM", "HIGH"]);
@@ -77,23 +134,32 @@ app.post("/api/requests", async (req, res) => {
     return res.status(400).json({ error: "priority must be LOW|MEDIUM|HIGH" });
 
   try {
+    // Only admins may create requests at all
+    const actorIsAdmin = await isAdmin(actorId);
+    if (!actorIsAdmin) return res.status(403).json({ error: "forbidden" });
+    // Only allow assigning to someone else when the actor is an admin
+    if (assigneeId !== actorId) {
+      const ok = await isAdmin(actorId);
+      if (!ok) return res.status(403).json({ error: "forbidden" });
+    }
     const id = randomUUID();
 
     await pool.query(
       `INSERT INTO requests
         (id, workspace_id, title, description, status, priority, created_by_id, assignee_id)
        VALUES
-        ($1, 'ws_demo', $2, $3, 'OPEN', $4, 'u_demo', $5)`,
-      [id, title, description, priority, assigneeId]
+        ($1, 'ws_demo', $2, $3, 'OPEN', $4, $5, $6)`,
+      [id, title, description, priority, actorId, assigneeId]
     );
 
     await pool.query(
   `INSERT INTO audit_logs
     (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, after_json)
    VALUES
-    ($1, 'ws_demo', 'u_demo', 'CREATE', 'request', $2, $3, $4::jsonb)`,
+    ($1, 'ws_demo', $2, 'CREATE', 'request', $3, $4, $5::jsonb)`,
   [
     randomUUID(),
+    actorId,
     id,
     title, // <-- entity_label
     JSON.stringify({ title, description, priority, status: "OPEN", assignee_id: assigneeId }),
@@ -136,17 +202,19 @@ app.patch("/api/requests/:id/status", async (req, res) => {
     );
 
     // 3) audit diff (before/after)
+    const actorId = actorIdFromReq(req);
 await pool.query(
   `INSERT INTO audit_logs
     (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, before_json, after_json)
    VALUES
-    ($1, 'ws_demo', 'u_demo', 'STATUS_CHANGE', 'request', $2, $3, $4::jsonb, $5::jsonb)`,
+    ($1, 'ws_demo', $2, 'STATUS_CHANGE', 'request', $3, $4, $5::jsonb, $6::jsonb)`,
   [
     randomUUID(),                 // $1
-    id,                           // $2
-    beforeTitle,                  // $3
-    JSON.stringify({ status: beforeStatus }), // $4
-    JSON.stringify({ status }),               // $5
+    actorId,                      // $2
+    id,                           // $3
+    beforeTitle,                  // $4
+    JSON.stringify({ status: beforeStatus }), // $5
+    JSON.stringify({ status }),               // $6
   ]
 );
 
@@ -221,8 +289,8 @@ app.post("/api/requests/:id/comments", async (req, res) => {
 
     await pool.query(
       `INSERT INTO comments (id, request_id, author_id, message)
-       VALUES ($1, $2, 'u_demo', $3)`,
-      [commentId, requestId, message]
+       VALUES ($1, $2, $3, $4)`,
+      [commentId, requestId, actorIdFromReq(req), message]
     );
 
     // audit entry (user-readable)
@@ -230,9 +298,10 @@ app.post("/api/requests/:id/comments", async (req, res) => {
       `INSERT INTO audit_logs
         (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, after_json)
        VALUES
-        ($1, 'ws_demo', 'u_demo', 'COMMENT_CREATE', 'request', $2, $3, $4::jsonb)`,
+         ($1, 'ws_demo', $2, 'COMMENT_CREATE', 'request', $3, $4, $5::jsonb)`,
       [
         randomUUID(),
+        actorIdFromReq(req),
         requestId,
         requestTitle,
         JSON.stringify({ message }),
@@ -248,7 +317,15 @@ app.post("/api/requests/:id/comments", async (req, res) => {
 
 app.get("/api/users", async (_req, res) => {
   try {
-    const result = await pool.query(`SELECT id, name FROM users ORDER BY name ASC`);
+    // optional query `q` for partial matching against id or name
+    const q = _req.query.q ? String(Array.isArray(_req.query.q) ? _req.query.q[0] : _req.query.q) : null;
+    let result;
+    if (q) {
+      const like = `%${q}%`;
+      result = await pool.query(`SELECT id, name FROM users WHERE id ILIKE $1 OR name ILIKE $1 ORDER BY name ASC`, [like]);
+    } else {
+      result = await pool.query(`SELECT id, name FROM users ORDER BY name ASC`);
+    }
     res.json({ items: result.rows });
   } catch (e) {
     console.error(e);
@@ -272,6 +349,13 @@ app.patch("/api/requests/:id/assignee", async (req, res) => {
     const beforeTitle = beforeRes.rows[0].title;
     const beforeAssignee = beforeRes.rows[0].assignee_id;
 
+    const actor = actorIdFromReq(req);
+    // Only admins may reassign to someone else
+    if (actor !== assigneeId) {
+      const ok = await isAdmin(actor);
+      if (!ok) return res.status(403).json({ error: "forbidden" });
+    }
+
     await pool.query(
       "UPDATE requests SET assignee_id = $1, updated_at = now() WHERE id = $2",
       [assigneeId, id]
@@ -281,9 +365,10 @@ app.patch("/api/requests/:id/assignee", async (req, res) => {
       `INSERT INTO audit_logs
         (id, workspace_id, actor_id, action, entity_type, entity_id, entity_label, before_json, after_json)
        VALUES
-        ($1, 'ws_demo', 'u_demo', 'ASSIGN_CHANGE', 'request', $2, $3, $4::jsonb, $5::jsonb)`,
+        ($1, 'ws_demo', $2, 'ASSIGN_CHANGE', 'request', $3, $4, $5::jsonb, $6::jsonb)`,
       [
         randomUUID(),
+        actorIdFromReq(req),
         id,
         beforeTitle,
         JSON.stringify({ assignee_id: beforeAssignee }),

@@ -127,6 +127,22 @@ input, select, textarea {
 textarea { min-height: 96px; }
 input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 4px rgba(155,194,100,0.08); border-color: rgba(155,194,100,0.7); }
 
+/* Ensure option lists are readable in dark theme */
+select {
+  background: var(--site-card);
+  color: var(--site-text);
+}
+
+select option, select optgroup {
+  background: var(--site-card);
+  color: var(--site-text);
+}
+
+/* Hover styles for native option lists where supported */
+select option:hover {
+  background: rgba(255,255,255,0.03);
+}
+
 /* Request list */
 .request-list { display: grid; gap: 18px; list-style: none; padding: 0; }
 .request-item { border: 1px solid var(--site-border); border-radius: 12px; padding: 14px; background: var(--site-card); transition: transform 180ms ease, box-shadow 180ms ease, border-color 120ms; }

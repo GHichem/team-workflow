@@ -10,8 +10,12 @@ export async function getRequests(): Promise<{ items: RequestItem[] }> {
   return res.json();
 }
 
-export async function getAudit(limit = 50, offset = 0): Promise<{ items: AuditItem[] }> {
-  const res = await fetch(`${base}/api/audit?limit=${limit}&offset=${offset}`, { cache: "no-store" });
+export async function getAudit(limit = 50, offset = 0, filters?: { action?: string; actor_id?: string; q?: string }): Promise<{ items: AuditItem[] }> {
+  const qs = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (filters?.action) qs.set("action", filters.action);
+  if (filters?.actor_id) qs.set("actor_id", filters.actor_id);
+  if (filters?.q) qs.set("q", filters.q);
+  const res = await fetch(`${base}/api/audit?${qs.toString()}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load audit (${res.status})`);
   return res.json();
 }
@@ -28,8 +32,9 @@ export async function getComments(id: string): Promise<{ items: CommentItem[] }>
   return res.json();
 }
 
-export async function getUsers(): Promise<{ items: { id: string; name: string }[] }> {
-  const res = await fetch(`${base}/api/users`, { cache: "no-store" });
+export async function getUsers(q?: string): Promise<{ items: { id: string; name: string }[] }> {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : "";
+  const res = await fetch(`${base}/api/users${qs}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load users (${res.status})`);
   return res.json();
 }

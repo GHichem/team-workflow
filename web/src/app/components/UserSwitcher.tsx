@@ -1,22 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type User = { id: string; name: string };
 
 export default function UserSwitcher({ apiBase }: { apiBase: string }) {
   const [users, setUsers] = useState<User[]>([]);
-  const [sel, setSel] = useState<{ id: string; name: string } | null>(() => {
-    try {
-      const v = localStorage.getItem("view_as");
-      return v ? JSON.parse(v) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [sel, setSel] = useState<{ id: string; name: string } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
+    // restore selected view-as from localStorage on client only
+    try {
+      const v = localStorage.getItem("view_as");
+      if (v && mounted) setSel(JSON.parse(v));
+    } catch {}
     fetch(`${apiBase}/api/users`)
       .then((r) => r.json())
       .then((d) => {
@@ -47,6 +47,12 @@ export default function UserSwitcher({ apiBase }: { apiBase: string }) {
       localStorage.setItem("view_as", JSON.stringify(payload));
     } catch {}
     window.dispatchEvent(new CustomEvent("view-as-changed", { detail: payload }));
+    try {
+      // refresh server-rendered data when switching view
+      router.refresh();
+    } catch {
+      // no-op in unlikely failure
+    }
   }
 
   return (

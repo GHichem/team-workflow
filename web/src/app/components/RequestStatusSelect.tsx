@@ -27,9 +27,22 @@ export default function RequestStatusSelect({
     setLoading(true);
 
     try {
+      const actorId = (function getActorId() {
+        try {
+          const v = localStorage.getItem("view_as");
+          if (!v) return "u_demo";
+          const p = JSON.parse(v);
+          const id = p?.id ?? null;
+          if (!id || id === "ALL" || id === "admin") return "u_demo";
+          return id;
+        } catch {
+          return "u_demo";
+        }
+      })();
+
       const res = await fetch(`${apiBase}/api/requests/${requestId}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-actor-id": actorId },
         body: JSON.stringify({ status: next }),
       });
 
