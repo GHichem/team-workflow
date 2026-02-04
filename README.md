@@ -72,9 +72,12 @@ pg_dump "$DATABASE_URL" > dump-before-reset.sql
 ## Where to put screenshots
 Create a `docs/screenshots` directory at the repo root and add PNGs with descriptive names. This README already references the following placeholder files; replace them with real screenshots:
 
-- `docs/screenshots/home.png` — Homepage / Requests list
-- `docs/screenshots/audit-log.png` — Audit Log listing and filters
-- `docs/screenshots/request-detail.png` — Request detail with comments
+- `<img width="1919" height="998" alt="image" src="https://github.com/user-attachments/assets/ea62c57b-1bae-4fe0-a24a-77c2091643d2" />
+` — Homepage / Requests list
+- `<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/349bface-b0fd-4a0f-bca6-f4a91cd83dd5" />
+` — Audit Log listing and filters
+- `<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/4abfca1f-9cc2-45ce-86c8-bee9841cf74c" />
+` — Request detail with comments
 
 Add files with those names and the images will show inline here. Example Markdown to add a screenshot:
 
