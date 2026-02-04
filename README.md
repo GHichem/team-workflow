@@ -82,10 +82,13 @@ Demo data can be loaded using:
 
 
 ### Audit Log
-![Audit log](docs/screenshots/audit-log.png)
+<img width="1904" height="998" alt="image" src="https://github.com/user-attachments/assets/13312151-a748-45fa-9d6f-8072ccc89407" />
+
 
 ### Request detail with comments
-<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/d1bd4645-32c1-4398-9dc8-edb4f3212a1a" />
+<img width="1903" height="994" alt="image" src="https://github.com/user-attachments/assets/6b4e0434-a7a5-4793-9370-44c3ab255ad4" />
+<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/531ffaaf-706e-40ec-a97b-103070d7ff7d" />
+
 
 
 ---
