@@ -1,113 +1,110 @@
 # Team Workflow
 
-This repository contains a small web app for managing requests and an audit log.
+Team Workflow is a small full-stack web application that demonstrates how requests can be
+created, assigned, discussed, and audited inside a team.
 
-This README explains how to run the app locally, reset the database, and where to add screenshots that demonstrate the site UI.
-
-**Quick Links**
-- Init SQL: [api/sql/001_init.sql](api/sql/001_init.sql)
-- Seed SQL: [api/sql/002_seed.sql](api/sql/002_seed.sql)
-
-## Prerequisites
-- Node.js (16+)
-- PostgreSQL (or a running DB instance reachable from `DATABASE_URL`)
-- `psql` CLI for running SQL files (or Docker + docker-compose if you use a containerized DB)
-
-## Local dev
-1. Install dependencies (in both root and `web/` / `api/` if needed):
-
-```bash
-# at repo root
-npm install
-# then, if desired, enter the web folder
-cd web
-npm install
-```
-
-2. Set `DATABASE_URL` to point at your Postgres instance. Example:
-
-```bash
-export DATABASE_URL="postgresql://postgres:password@localhost:5432/team_workflow"
-# (Windows PowerShell)
-$env:DATABASE_URL = "postgresql://postgres:password@localhost:5432/team_workflow"
-```
-
-3. Create / reset schema and load seed data (see DB section below).
-
-4. Run the app (example for Next.js web front-end):
-
-```bash
-cd web
-npm run dev
-```
-
-Open `http://localhost:3000` (or the port your app uses).
-
-## Database: reset and seed
-Choose one of these approaches depending on whether you want to fully recreate the schema or just wipe rows.
-
-Option A — Full reset (drop & recreate schema)
-
-```bash
-# Drop and recreate the public schema, then run init + seed
-psql "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-psql "$DATABASE_URL" -f api/sql/001_init.sql
-psql "$DATABASE_URL" -f api/sql/002_seed.sql
-```
-
-Option B — Truncate (keep schema, remove data)
-
-```bash
-psql "$DATABASE_URL" -c "TRUNCATE TABLE audit_logs, comments, requests, memberships, users, workspaces RESTART IDENTITY CASCADE;"
-psql "$DATABASE_URL" -f api/sql/002_seed.sql
-```
-
-Notes:
-- Always back up your DB before running destructive commands. Use `pg_dump` to export a backup:
-
-```bash
-pg_dump "$DATABASE_URL" > dump-before-reset.sql
-```
-
-## Where to put screenshots
-Create a `docs/screenshots` directory at the repo root and add PNGs with descriptive names. This README already references the following placeholder files; replace them with real screenshots:
-
-- `<img width="1919" height="998" alt="image" src="https://github.com/user-attachments/assets/ea62c57b-1bae-4fe0-a24a-77c2091643d2" />
-` — Homepage / Requests list
-- `<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/349bface-b0fd-4a0f-bca6-f4a91cd83dd5" />
-` — Audit Log listing and filters
-- `<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/4abfca1f-9cc2-45ce-86c8-bee9841cf74c" />
-` — Request detail with comments
-
-Add files with those names and the images will show inline here. Example Markdown to add a screenshot:
-
-```md
-![Audit Log](docs/screenshots/audit-log.png)
-```
-
-## Suggested screenshots and captions
-
-- Home / Requests: shows request cards and top navigation.
-- Audit Log: shows filters at top, table of logs, and the pagination controls (Previous / Page / Next aligned right).
-- Request Detail: shows comments panel and preview panel if used.
-
-If you want, I can create a `docs/screenshots/.gitkeep` placeholder file for you and commit it here so the folder exists; I can also prepare a short guide of recommended screenshot sizes (e.g. 1280×720) for consistent presentation.
-
-## How to use the app (short)
-- Browse requests from the main Requests page.
-- Create a request using the request create form.
-- View the Audit Log to see actions (filters at top, results table, pagination to the right).
-- Seeded demo data is inserted by running [api/sql/002_seed.sql](api/sql/002_seed.sql).
-
-## Where code lives
-- Frontend (Next.js): `web/`
-- Backend API: `api/`
-- DB schema & seeds: `api/sql/` (see the two SQL files above)
+The project focuses on **clarity of workflow**, **traceability**, and **realistic business logic**,
+not on visual polish or authentication complexity.
 
 ---
-If you want, I can also:
-- Create the `docs/screenshots` folder and a `.gitkeep` file.
-- Generate a richer `api/sql/002_seed.sql` with more realistic example data.
-- Add a short gallery section in this README with captions (once you provide the screenshots or let me generate them).
 
-Tell me which of the above you'd like next.
+## Overview
+
+**Team Workflow** simulates a simple internal tool where:
+
+- a request is created with details
+- a request is assigned to a team member
+- the status of a request changes over time
+- team members can leave comments
+- every important action is recorded in an **audit log** with before/after tracking
+
+This mirrors how real internal tools work in companies.
+
+---
+
+## Key features
+
+- Create requests with title, description, priority, and assignee
+- Change request status (OPEN, IN_REVIEW, APPROVED, REJECTED)
+- Assign requests to demo users (Alice, Bob, Demo User)
+- Request detail page with comments
+- Audit Log with readable change history (e.g. `OPEN → REJECTED`)
+- Clear empty states and populated states
+- Clean separation between frontend, backend, and database
+
+---
+
+## App states: empty vs populated
+
+### Empty state (fresh database)
+
+- No requests are shown on the Requests page
+- UI displays a message like **“No requests yet. Create one above.”**
+- Audit Log shows **“No audit entries yet.”**
+
+This demonstrates how the app behaves for a new workspace.
+
+### Populated state (after creating requests)
+
+- Requests appear as cards showing:
+  - title
+  - description
+  - status
+  - priority
+  - assignee
+- Clicking a request opens the **Request Detail page**
+- Comments can be added to discuss the request
+- All actions appear in the **Audit Log** with before/after tracking
+
+Demo data can be loaded using:
+- [`api/sql/002_seed.sql`](api/sql/002_seed.sql)
+
+---
+
+## How to use the app
+
+1. Open the **Requests** page
+2. Create a new request using the form
+3. Assign the request to a demo user
+4. Change the request status
+5. Click a request to open the **Request Detail page**
+6. Add comments to the request
+7. Open the **Audit Log** to see all actions and changes
+
+---
+
+## Screenshots
+
+> 📌 **Note:** Screenshots illustrate the app in a populated state.
+
+### Requests list
+![Requests list](docs/screenshots/requests.png)
+
+### Audit Log
+![Audit log](docs/screenshots/audit-log.png)
+
+### Request detail with comments
+![Request detail](docs/screenshots/request-detail.png)
+
+---
+
+## Local development
+
+### Prerequisites
+
+- Node.js (16+)
+- PostgreSQL **or** Docker
+- `psql` CLI (if not using Docker)
+
+---
+
+### Install dependencies
+
+```bash
+# backend
+cd api
+npm install
+
+# frontend
+cd ../web
+npm install
