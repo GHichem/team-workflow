@@ -1,7 +1,7 @@
-import { getAudit, getUsers } from "../lib/api";
+import { getAudit, getUsers } from "../../lib/api";
 import PaginationControls from "./PaginationControls";
 import FilterControls from "./FilterControls";
-import type { AuditItem } from "../lib/types";
+import type { AuditItem } from "../../lib/types";
 
 function getStatusFromJson(json?: Record<string, unknown> | null) {
   if (!json) return "?";
@@ -15,13 +15,13 @@ type Props = {
 
 export default async function AuditPage({ searchParams }: Props) {
   // `searchParams` may be a Promise when navigated client-side; await it
-  const sp = await (searchParams as any);
+  const sp = (await (searchParams as unknown)) as Props["searchParams"] | undefined;
   const perPage = 10;
   const pageRaw = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
   const page = Math.max(1, Number(pageRaw ?? 1) || 1);
   const offset = (page - 1) * perPage;
 
-  let data: { items: AuditItem[] } | null = null;
+  let data: { items: AuditItem[]; _usersMap?: Map<string, string> } | null = null;
   let error: string | null = null;
 
   try {
@@ -37,8 +37,8 @@ export default async function AuditPage({ searchParams }: Props) {
     const usersMap = new Map<string, string>((usersRes.items ?? []).map((u) => [u.id, u.name]));
     // for any actor ids in the fetched audit items that aren't present in the
     // initial users list, try a targeted lookup so we can show the correct name
-    const itemsNow = (auditRes.items ?? []) as any[];
-    const missing = Array.from(new Set(itemsNow.map((it) => it.actor_id).filter(Boolean))).filter((id) => !usersMap.has(id));
+    const itemsNow = auditRes.items ?? [];
+    const missing = Array.from(new Set(itemsNow.map((it) => it.actor_id).filter(Boolean as unknown as (v: unknown) => v is string))).filter((id) => !usersMap.has(id as string));
     if (missing.length > 0) {
       try {
         const lookups = await Promise.all(missing.map((id) => getUsers(id)));
@@ -52,7 +52,7 @@ export default async function AuditPage({ searchParams }: Props) {
     // ensure the special demo admin id is shown as "Admin" in the UI
     usersMap.set("u_demo", "Admin");
     // attach usersMap to data for use when rendering
-    (data as any)._usersMap = usersMap;
+    data = { ...(data ?? { items: auditRes.items ?? [] }), _usersMap: usersMap };
   } catch (e: unknown) {
     if (e instanceof Error) error = e.message;
     else error = String(e ?? "Failed to load audit logs");
@@ -102,7 +102,7 @@ export default async function AuditPage({ searchParams }: Props) {
                       <td className="py-3 px-4 align-top">{x.entity_type}</td>
                       <td className="py-3 px-4 align-top">{requestName}</td>
                       <td className="py-3 px-4 align-top">{change}</td>
-                      <td className="py-3 px-4 align-top font-mono text-site-muted">{(((data as any)._usersMap?.get(x.actor_id ?? "") as string) ?? (x.actor_id === "u_demo" ? "Admin" : undefined) ?? x.actor_id) ?? "-"}</td>
+                      <td className="py-3 px-4 align-top font-mono text-site-muted">{(data?._usersMap?.get(x.actor_id ?? "") ?? (x.actor_id === "u_demo" ? "Admin" : undefined) ?? x.actor_id) ?? "-"}</td>
                     </tr>
                   );
                 })}

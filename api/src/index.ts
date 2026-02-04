@@ -55,7 +55,7 @@ async function isAdmin(userId: string) {
       "SELECT role FROM memberships WHERE user_id = $1 AND workspace_id = 'ws_demo'",
       [userId]
     );
-    const role = r?.rows?.[0]?.role ?? "";
+    const role = String(r?.rows?.[0]?.role ?? "").toUpperCase();
     return (r?.rowCount ?? 0) > 0 && role === "ADMIN";
   } catch {
     return false;
@@ -77,7 +77,8 @@ app.get("/api/audit", async (req, res) => {
       "SELECT role FROM memberships WHERE user_id = $1 AND workspace_id = 'ws_demo'",
       [actorId]
     );
-    if (mem.rowCount === 0 || (mem.rows[0].role ?? "") !== "ADMIN") {
+    const memRole = String(mem.rows[0]?.role ?? "").toUpperCase();
+    if (mem.rowCount === 0 || memRole !== "ADMIN") {
       return res.status(403).json({ error: "forbidden" });
     }
 
@@ -330,6 +331,56 @@ app.get("/api/users", async (_req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to load users" });
+  }
+});
+
+// DEBUG: check membership for a given user id (temporary)
+app.get("/api/debug/membership/:userId", async (req, res) => {
+  const userId = String(req.params.userId);
+  try {
+    const result = await pool.query(
+      "SELECT id, user_id, workspace_id, role FROM memberships WHERE user_id = $1",
+      [userId]
+    );
+    res.json({ rowCount: result.rowCount, rows: result.rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to query memberships" });
+  }
+});
+
+// DEBUG: create demo user, workspace and admin membership (idempotent)
+app.post("/api/debug/create-demo-admin", async (_req, res) => {
+  try {
+    await pool.query("BEGIN");
+    await pool.query(
+      "INSERT INTO users (id, email, name) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
+      ["u_demo", "demo@example.com", "Demo User"]
+    );
+
+    await pool.query(
+      "INSERT INTO workspaces (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING",
+      ["ws_demo", "Demo Workspace"]
+    );
+
+    const mem = await pool.query(
+      "SELECT id FROM memberships WHERE user_id = $1 AND workspace_id = $2",
+      ["u_demo", "ws_demo"]
+    );
+    if (mem.rowCount === 0) {
+      const id = randomUUID();
+      await pool.query(
+        "INSERT INTO memberships (id, user_id, workspace_id, role) VALUES ($1, $2, $3, $4)",
+        [id, "u_demo", "ws_demo", "ADMIN"]
+      );
+    }
+
+    await pool.query("COMMIT");
+    res.json({ ok: true });
+  } catch (e) {
+    await pool.query("ROLLBACK").catch(() => null);
+    console.error(e);
+    res.status(500).json({ error: "Failed to create demo admin" });
   }
 });
 

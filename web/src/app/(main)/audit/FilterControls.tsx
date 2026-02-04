@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { getUsers } from "../lib/api";
+import { getUsers } from "../../lib/api";
 import React from "react";
 
 export default function FilterControls() {
@@ -15,10 +15,8 @@ export default function FilterControls() {
   const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
   const [appliedFilters, setAppliedFilters] = useState<{ actor?: string; actorName?: string; action?: string; q?: string }>({});
   const fetchTimer = useRef<number | null>(null);
-  const [openSuggestions, setOpenSuggestions] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [selectedActorName, setSelectedActorName] = useState<string | null>(null);
-  const [dropdownFilter, setDropdownFilter] = useState<string>("");
+  
 
   // fetch full users list for the select-style actor control
   useEffect(() => {
@@ -99,14 +97,13 @@ export default function FilterControls() {
   }, []);
 
   function removeFilter(key: "actor" | "action" | "q") {
-    const next = { ...appliedFilters } as any;
+    const next = { ...appliedFilters } as Record<string, string | undefined>;
     delete next[key];
-    setAppliedFilters(next);
+    setAppliedFilters(next as { actor?: string; actorName?: string; action?: string; q?: string });
 
     // if removing actor filter, also reset the local actor input so user can pick another
     if (key === "actor") {
       setActor("");
-      setSelectedActorName(null);
       // re-populate suggestions so the actor select shows options again
       getUsers()
         .then((res) => setSuggestions(res.items ?? []))
@@ -141,7 +138,7 @@ export default function FilterControls() {
       try {
         const res = await getUsers(actor);
         setSuggestions(res.items ?? []);
-      } catch (e) {
+      } catch {
         setSuggestions([]);
       }
     }, 200);
@@ -149,37 +146,21 @@ export default function FilterControls() {
     return () => {
       if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
     };
-  }, [actor]);
+  }, [actor, suggestions]);
 
   // close suggestions when clicking outside the control
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!containerRef.current) return;
       if (!containerRef.current.contains(e.target as Node)) {
-        setOpenSuggestions(false);
+        // no-op: dropdown suggestions not used in current UI
       }
     }
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  function chooseSuggestion(id: string, name?: string) {
-    setActor(id);
-    setSelectedActorName(name ?? null);
-    setDropdownFilter("");
-    setOpenSuggestions(false);
-  }
-
-  async function openDropdown() {
-    setOpenSuggestions(true);
-    setDropdownFilter("");
-    try {
-      const res = await getUsers();
-      setSuggestions(res.items ?? []);
-    } catch {
-      setSuggestions([]);
-    }
-  }
+  // suggestion selection and dropdown helpers removed (not used)
 
   return (
     <div ref={containerRef} className="flex flex-col gap-3 mb-3 w-full">

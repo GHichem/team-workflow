@@ -1,7 +1,7 @@
-import RequestCreateForm from "../components/RequestCreateForm";
-import RequestList from "../components/RequestList";
-import { getRequests } from "../lib/api";
-import type { RequestItem } from "../lib/types";
+import RequestCreateForm from "../../components/RequestCreateForm";
+import RequestList from "../../components/RequestList";
+import { getRequests } from "../../lib/api";
+import type { RequestItem } from "../../lib/types";
 
 export default async function RequestsPage() {
   const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000";

@@ -17,7 +17,7 @@ export default function PaginationControls({ page, hasNext }: { page: number; ha
   }
 
   return (
-    <div className="mt-4 flex items-center gap-3 flex-wrap sm:flex-nowrap justify-center">
+    <div className="mt-4 w-full flex items-center gap-3 justify-end">
       {page > 1 ? (
         <button onClick={() => go(page - 1)} className="btn-outline">← Previous</button>
       ) : (

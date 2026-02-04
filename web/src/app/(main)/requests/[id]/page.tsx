@@ -1,6 +1,6 @@
-import { getComments, getRequest, getUsers } from "../../lib/api";
-import type { CommentItem, RequestItem } from "../../lib/types";
-import CommentForm from "../../components/CommentForm";
+import { getComments, getRequest, getUsers } from "../../../lib/api";
+import type { CommentItem, RequestItem } from "../../../lib/types";
+import CommentForm from "../../../components/CommentForm";
 
 export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000";
