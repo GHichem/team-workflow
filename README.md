@@ -85,7 +85,8 @@ Demo data can be loaded using:
 ![Audit log](docs/screenshots/audit-log.png)
 
 ### Request detail with comments
-![Request detail](docs/screenshots/request-detail.png)
+<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/d1bd4645-32c1-4398-9dc8-edb4f3212a1a" />
+
 
 ---
 
