@@ -77,8 +77,9 @@ Demo data can be loaded using:
 
 > 📌 **Note:** Screenshots illustrate the app in a populated state.
 
-### Requests list
-![Requests list](docs/screenshots/requests.png)
+### Home Page
+<img width="1919" height="996" alt="image" src="https://github.com/user-attachments/assets/dc866228-37b9-42f4-a5c7-0cb51ae00a8e" />
+
 
 ### Audit Log
 ![Audit log](docs/screenshots/audit-log.png)
