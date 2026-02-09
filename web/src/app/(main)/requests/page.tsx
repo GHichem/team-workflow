@@ -6,35 +6,37 @@ import type { RequestItem } from "../../lib/types";
 export default async function RequestsPage() {
   const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000";
 
+  let data: { items: RequestItem[] } | null = null;
+  let error: string | null = null;
 
-let data: { items: RequestItem[] } | null = null;
-let error: string | null = null;
-
-try {
-  data = await getRequests();
-} catch (e: unknown) {
-  if (e instanceof Error) error = e.message;
-  else error = String(e ?? "Failed to load requests");
-}
-
+  try {
+    data = await getRequests();
+  } catch (e: unknown) {
+    if (e instanceof Error) error = e.message;
+    else error = String(e ?? "Failed to load requests");
+  }
 
   return (
-    <main className="max-w-5xl mx-auto p-6 md:p-8 font-sans">
-      <h1 className="text-3xl md:text-4xl mb-4 font-extrabold">Requests</h1>
+    <>
+      <h1 className="text-4xl md:text-5xl mb-8 font-extrabold">Requests</h1>
 
       {error ? (
-        <p className="text-site-muted">{error}</p>
+        <p className="text-site-muted text-lg">{error}</p>
       ) : !data ? (
         <p className="text-site-muted">Loading...</p>
       ) : (
         <>
-          <div className="site-card mb-6">
+          <div className="site-card mb-8">
+            <h2 className="text-lg font-bold mb-6 block">Create a new request</h2>
             <RequestCreateForm apiBase={base} />
           </div>
 
-          <RequestList items={data.items} />
+          <div>
+            <h2 className="text-lg font-bold mb-4">All requests</h2>
+            <RequestList items={data.items} />
+          </div>
         </>
       )}
-    </main>
+    </>
   );
 }

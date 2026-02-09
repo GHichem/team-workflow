@@ -72,7 +72,7 @@ export default function UserSwitcher({ apiBase }: { apiBase: string }) {
         ))}
       </select>
 
-      <div className="text-site-muted text-sm">
+      <div className="text-site-muted text-sm" style={{ marginLeft: "10px" }}>
         Viewing as: <span className="text-site-text font-semibold">{sel?.name ?? "All"}</span>
       </div>
     </div>

@@ -17,20 +17,24 @@ export default function PaginationControls({ page, hasNext }: { page: number; ha
   }
 
   return (
-    <div className="mt-4 w-full flex items-center gap-3 justify-end">
-      {page > 1 ? (
-        <button onClick={() => go(page - 1)} className="btn-outline">← Previous</button>
-      ) : (
-        <button className="btn-outline opacity-50 cursor-default" disabled>← Previous</button>
-      )}
+    <div className="flex flex-row items-center gap-3">
+      <button
+        onClick={() => go(page - 1)}
+        disabled={page <= 1}
+        className={`btn-outline ${page <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        ← Previous
+      </button>
 
-      <div className="text-site-muted">Page {page}</div>
+      <span className="text-sm font-medium text-site-muted px-3 py-1.5">Page {page}</span>
 
-      {hasNext ? (
-        <button onClick={() => go(page + 1)} className="btn-outline">Next →</button>
-      ) : (
-        <button className="btn-outline opacity-50 cursor-default" disabled>Next →</button>
-      )}
+      <button
+        onClick={() => go(page + 1)}
+        disabled={!hasNext}
+        className={`btn-outline ${!hasNext ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        Next →
+      </button>
     </div>
   );
 }

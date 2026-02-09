@@ -63,56 +63,61 @@ export default async function AuditPage({ searchParams }: Props) {
   const pageItems = hasNext ? items.slice(0, perPage) : items;
 
   return (
-    <section className="bg-site-card border border-site-border rounded-2xl p-4">
-      <h1 className="text-2xl font-bold">Audit Log</h1>
+    <>
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-8">Audit Log</h1>
 
-      {error ? (
-        <p className="text-site-muted mt-2">{error}</p>
-      ) : pageItems.length === 0 ? (
-        <p className="text-site-muted mt-2">No audit entries yet. Next: we will write audit entries when creating or updating requests.</p>
-      ) : (
-        <>
-          <div className="overflow-x-auto mt-3">
-            <FilterControls />
-            <table className="audit-table w-full">
-              <thead>
-                <tr className="text-left text-site-muted">
-                  <th className="py-3 px-4">Time</th>
-                  <th className="py-3 px-4">Action</th>
-                  <th className="py-3 px-4">Entity</th>
-                  <th className="py-3 px-4">Request</th>
-                  <th className="py-3 px-4">Change</th>
-                  <th className="py-3 px-4">Actor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((x) => {
-                  const requestName = x.entity_label ?? x.entity_id ?? "-";
-                  const change =
-                    x.action === "STATUS_CHANGE"
-                      ? `${getStatusFromJson(x.before_json)} → ${getStatusFromJson(x.after_json)}`
-                      : x.action === "CREATE"
-                      ? "Created"
-                      : "-";
+      <div className="site-card">
+        {error ? (
+          <p className="text-site-muted mt-2">{error}</p>
+        ) : pageItems.length === 0 ? (
+          <p className="text-site-muted mt-2">No audit entries yet. Next: we will write audit entries when creating or updating requests.</p>
+        ) : (
+          <>
+            <div className="mb-6 pb-6 border-b border-site-border">
+              <FilterControls />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="audit-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Request</th>
+                    <th>Change</th>
+                    <th>Actor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.map((x) => {
+                    const requestName = x.entity_label ?? x.entity_id ?? "-";
+                    const change =
+                      x.action === "STATUS_CHANGE"
+                        ? `${getStatusFromJson(x.before_json)} → ${getStatusFromJson(x.after_json)}`
+                        : x.action === "CREATE"
+                        ? "Created"
+                        : "-";
 
-                  return (
-                    <tr key={x.id} className="even:bg-site-card/40 hover:shadow-sm">
-                      <td className="py-3 px-4 align-top">{new Date(x.created_at).toLocaleString()}</td>
-                      <td className="py-3 px-4 align-top font-semibold">{x.action}</td>
-                      <td className="py-3 px-4 align-top">{x.entity_type}</td>
-                      <td className="py-3 px-4 align-top">{requestName}</td>
-                      <td className="py-3 px-4 align-top">{change}</td>
-                      <td className="py-3 px-4 align-top font-mono text-site-muted">{(data?._usersMap?.get(x.actor_id ?? "") ?? (x.actor_id === "u_demo" ? "Admin" : undefined) ?? x.actor_id) ?? "-"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <PaginationControls page={page} hasNext={hasNext} />
-        </>
-      )}
-    </section>
+                    return (
+                      <tr key={x.id}>
+                        <td>{new Date(x.created_at).toLocaleString()}</td>
+                        <td className="font-semibold">{x.action}</td>
+                        <td>{x.entity_type}</td>
+                        <td>{requestName}</td>
+                        <td className="text-site-muted">{change}</td>
+                        <td className="font-medium">{(data?._usersMap?.get(x.actor_id ?? "") ?? (x.actor_id === "u_demo" ? "Admin" : undefined) ?? x.actor_id) ?? "-"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-6 border-t border-site-border pt-4">
+              <PaginationControls page={page} hasNext={hasNext} />
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }

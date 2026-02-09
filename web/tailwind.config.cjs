@@ -15,10 +15,10 @@ module.exports = {
         },
         site: {
           bg: '#0b0b0f',
-          card: '#12121a',
+          card: '#0f0f15',
           text: '#f5f5f7',
-          muted: 'rgba(245, 245, 247, 0.75)',
-          border: 'rgba(245, 245, 247, 0.12)'
+          muted: 'rgba(245, 245, 247, 0.7)',
+          border: 'rgba(245, 245, 247, 0.08)'
         }
       }
     },
