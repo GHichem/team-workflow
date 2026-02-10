@@ -12,10 +12,13 @@ export default function UserSwitcher({ apiBase }: { apiBase: string }) {
 
   useEffect(() => {
     let mounted = true;
-    // restore selected view-as from localStorage on client only
+
+    // restore selected view-as from localStorage after mount to avoid
+    // hydration mismatch between server and client
     try {
-      const v = localStorage.getItem("view_as");
-      if (v && mounted) setSel(JSON.parse(v));
+      const v = typeof window !== "undefined" ? localStorage.getItem("view_as") : null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (v) setSel(JSON.parse(v));
     } catch {}
     fetch(`${apiBase}/api/users`)
       .then((r) => r.json())

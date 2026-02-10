@@ -44,7 +44,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         <div className="md:flex-1">
           <h1 className="text-2xl font-bold mb-2">{item!.title}</h1>
           {item!.description && <p className="text-site-muted leading-6">{item!.description}</p>}
-          <div className="mt-3 text-site-muted">Assignee: <span className="text-site-text font-semibold">{item!.assignee_name ?? '-'}</span></div>
+          <div className="mt-3 text-site-muted">Assignee: <span className="text-site-text font-semibold">{item!.assignee_name ?? 'Unassigned'}</span></div>
         </div>
 
         <aside className="md:w-56 md:text-right">
@@ -56,25 +56,34 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
       <section className="mt-6">
         <h2 className="text-lg font-semibold mb-3">Comments</h2>
 
-        <CommentForm apiBase={base} requestId={id} />
+        <div className="max-w-5xl w-full">
+          <CommentForm apiBase={base} requestId={id} />
 
-        {comments.length === 0 ? (
-          <p className="text-site-muted">No comments yet.</p>
-        ) : (
-          <ul className="grid gap-3 list-none p-0">
-            {comments.map((c) => (
-              <li key={c.id} className="border border-site-border rounded-lg p-3 bg-site-card">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <div className="font-semibold text-site-text">{usersMap?.get(c.author_id ?? "") ?? c.author_id}</div>
-                    <div className="text-site-muted text-sm">{formatRelative(c.created_at)}</div>
-                  </div>
-                  <div className="mt-2 text-site-text leading-6">{c.message}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          {comments.length === 0 ? (
+            <p className="text-site-muted">No comments yet.</p>
+          ) : (
+            <ul className="flex flex-col gap-6 list-none p-0 m-0 mt-4">
+              {comments.map((c) => {
+                const authorName = usersMap?.get(c.author_id ?? "") ?? c.author_id;
+                return (
+                  <li
+                    key={c.id}
+                    className="bg-site-card rounded-lg shadow-sm p-6 border border-transparent hover:shadow-md"
+                  >
+                    <div className="flex items-baseline justify-between gap-3" style={{ borderLeft: "6px solid rgba(240,117,174,0.08)" }}>
+                      <div className="text-xl font-semibold text-site-text">{authorName}</div>
+                      <div className="text-site-muted text-sm">{formatRelative(c.created_at)}</div>
+                    </div>
+
+                    <div className="mt-4 bg-[rgba(255,255,255,0.02)] p-6 rounded-md">
+                      <div className="text-site-text text-lg leading-8 whitespace-pre-wrap break-words">{c.message}</div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </section>
     </main>
   );

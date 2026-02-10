@@ -5,13 +5,19 @@ import { useRouter } from "next/navigation";
 import type { RequestItem } from "../lib/types";
 import RequestCard from "./RequestCard";
 
+
+
 export default function RequestList({ items }: { items: RequestItem[] }) {
-	const [viewAs, setViewAs] = useState<{ id: string; name: string } | null>(null);
+  const [viewAs, setViewAs] = useState<{ id: string; name: string } | null>(null);
+
+	const router = useRouter();
 
 	useEffect(() => {
-		// restore view-as from localStorage on client mount
+		// restore selected view-as from localStorage after mount to avoid
+		// hydration mismatch between server and client
 		try {
-			const v = localStorage.getItem("view_as");
+			const v = typeof window !== "undefined" ? localStorage.getItem("view_as") : null;
+			// eslint-disable-next-line react-hooks/set-state-in-effect
 			if (v) setViewAs(JSON.parse(v));
 		} catch {}
 
@@ -32,8 +38,6 @@ export default function RequestList({ items }: { items: RequestItem[] }) {
 	if (filtered.length === 0) {
 		return <p className="text-site-muted">No requests for selected user.</p>;
 	}
-
-	const router = useRouter();
 
 	function goTo(id: string) {
 		router.push(`/requests/${id}`);

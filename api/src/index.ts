@@ -233,9 +233,11 @@ app.get("/api/requests/:id", async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT id, title, description, status, priority, created_at, updated_at
-       FROM requests
-       WHERE id = $1`,
+      `SELECT r.id, r.title, r.description, r.status, r.priority, r.created_at, r.updated_at,
+              r.assignee_id, u.name AS assignee_name
+       FROM requests r
+       LEFT JOIN users u ON u.id = r.assignee_id
+       WHERE r.id = $1`,
       [id]
     );
 

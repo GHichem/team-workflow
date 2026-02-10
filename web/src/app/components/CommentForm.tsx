@@ -67,9 +67,13 @@ export default function CommentForm({ apiBase, requestId }: Props) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Write a comment..."
-          className="flex-1 min-w-[280px] px-3 py-2 rounded-lg border border-site-border bg-site-card text-site-text outline-none"
+          className="flex-1 min-w-0 px-5 py-4 rounded-md border border-site-border bg-[rgba(255,255,255,0.02)] text-site-text outline-none text-lg"
         />
-        <button type="submit" disabled={loading} className="px-3 py-1 rounded-md bg-palette-pink text-black font-bold disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-5 py-3 rounded-md bg-[rgba(255,255,255,0.03)] text-site-text border border-site-border hover:bg-[rgba(255,255,255,0.04)] disabled:opacity-60 text-lg"
+        >
           {loading ? "Posting..." : "Post"}
         </button>
       </div>

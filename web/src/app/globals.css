@@ -22,6 +22,11 @@ html, body {
   height: 100%;
 }
 
+/* sensible box-sizing so width calculations include padding/border */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   background: var(--site-bg);
   color: var(--site-text);
@@ -240,6 +245,10 @@ input::placeholder, textarea::placeholder {
 
 textarea {
   min-height: 100px;
+}
+
+/* Use `.resizable` when vertical resize is desired for specific textareas */
+.resizable {
   resize: vertical;
 }
 
@@ -374,6 +383,19 @@ select option {
   main {
     padding: 40px 28px 100px 28px;
   }
+}
+
+/* Ensure consistent spacing between stacked cards and constrain card textareas
+   These rules are placed after Tailwind utilities so they reliably override
+   utility classes when necessary. */
+.site-card + .site-card {
+  margin-top: 1.5rem; /* ~24px */
+}
+
+/* Constrain textareas inside site-cards so they don't overflow the card */
+.site-card textarea {
+  max-height: 12rem; /* 192px */
+  overflow: auto;
 }
 
 /* ============================================

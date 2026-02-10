@@ -17,8 +17,9 @@ export default async function RequestsPage() {
   }
 
   return (
-    <>
-      <h1 className="text-4xl md:text-5xl mb-8 font-extrabold">Requests</h1>
+    <main className="max-w-5xl mx-auto p-6 md:p-8 font-sans">
+      <div className="-mt-16 md:-mt-16 -mb-16">
+      <h1 className="text-3xl md:text-4xl mb-4 font-extrabold">Requests</h1>
 
       {error ? (
         <p className="text-site-muted text-lg">{error}</p>
@@ -26,17 +27,18 @@ export default async function RequestsPage() {
         <p className="text-site-muted">Loading...</p>
       ) : (
         <>
-          <div className="site-card mb-8">
-            <h2 className="text-lg font-bold mb-6 block">Create a new request</h2>
+          <div className="site-card mb-8 p-6">
+            <h2 className="text-lg font-bold mb-4">Create a new request</h2>
             <RequestCreateForm apiBase={base} />
           </div>
 
-          <div>
+          <div className="site-card p-4">
             <h2 className="text-lg font-bold mb-4">All requests</h2>
             <RequestList items={data.items} />
           </div>
         </>
       )}
-    </>
+      </div>
+    </main>
   );
 }

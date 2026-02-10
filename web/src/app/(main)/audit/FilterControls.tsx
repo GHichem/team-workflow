@@ -166,7 +166,7 @@ export default function FilterControls() {
     <div ref={containerRef} className="flex flex-col gap-3 mb-3 w-full">
       {/* Top row: filters inline */}
       <div className="flex items-center gap-3">
-        <select value={action ?? ""} onChange={(e) => setAction(e.target.value || null)} className="px-2 py-1 rounded border border-site-border bg-transparent w-40">
+        <select value={action ?? ""} onChange={(e) => setAction(e.target.value || null)} className="px-2 py-1 rounded border border-site-border bg-transparent w-40" style={{ marginRight: "10px" , marginBottom: "10px" }}>
           <option value="">All actions</option>
           <option value="CREATE">CREATE</option>
           <option value="COMMENT_CREATE">COMMENT_CREATE</option>
@@ -178,6 +178,7 @@ export default function FilterControls() {
           value={actor ?? ""}
           onChange={(e) => setActor(e.target.value || null)}
           className="px-2 py-1 rounded border border-site-border bg-transparent w-48"
+          style={{ marginRight: "10px", marginBottom: "10px" }}
         >
           <option value="">Actor</option>
           {suggestions.map((s) => (
@@ -187,12 +188,12 @@ export default function FilterControls() {
           ))}
         </select>
 
-        <input placeholder="Search audit (text, title, comment)" value={q ?? ""} onChange={(e) => setQ(e.target.value || null)} className="px-2 py-1 rounded border border-site-border bg-transparent flex-1 max-w-lg" />
+        <input placeholder="Search audit (text, title, comment)" value={q ?? ""} onChange={(e) => setQ(e.target.value || null)} className="px-2 py-1 rounded border border-site-border bg-transparent flex-1 max-w-lg" style={{ marginBottom: "10px" }} />
       </div>
 
       {/* Buttons row */}
-      <div className="flex items-center gap-2">
-        <button onClick={apply} className="btn-outline px-3 py-1">Apply</button>
+      <div className="flex items-center gap-2" style={{ marginBottom: "10px" }}>
+        <button onClick={apply} className="btn-outline px-3 py-1" style={{ marginRight: "10px" }}>Apply</button>
         <button onClick={clearAll} className="btn-outline px-3 py-1">Clear</button>
       </div>
 

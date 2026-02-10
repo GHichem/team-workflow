@@ -17,16 +17,17 @@ export default function PaginationControls({ page, hasNext }: { page: number; ha
   }
 
   return (
-    <div className="flex flex-row items-center gap-3">
+    <div className="flex flex-row items-center gap-3 justify-end" style={{ marginTop: "10px" }}>
       <button
         onClick={() => go(page - 1)}
         disabled={page <= 1}
         className={`btn-outline ${page <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+        style={{ marginRight: "10px" }}
       >
         ← Previous
       </button>
 
-      <span className="text-sm font-medium text-site-muted px-3 py-1.5">Page {page}</span>
+      <span className="text-sm font-medium text-site-muted px-3 py-1.5" style={{ marginRight: "10px" }}>Page {page}</span>
 
       <button
         onClick={() => go(page + 1)}

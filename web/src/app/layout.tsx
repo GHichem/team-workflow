@@ -44,7 +44,7 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-6 py-16">{children}</main>
+        <main className="max-w-5xl mx-auto px-6 py-16" style={{ marginTop: "5px", marginBottom: "0px" }}>{children}</main>
       </body>
     </html>
   );

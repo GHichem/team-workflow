@@ -20,7 +20,7 @@ export default function HomePage() {
           <p className="text-sm muted">Create and manage requests with priorities and assignments.</p>
         </div>
 
-        <div className="site-card" style={{marginBottom: "10px", marginTop: "10px"}}>
+        <div className="site-card">
           <h3 className="card-title">Status</h3>
           <p className="text-sm muted">Track request status changes through different stages.</p>
         </div>

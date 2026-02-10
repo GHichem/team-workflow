@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "lint": "npm --prefix web run lint"
+  },
   "devDependencies": {
     "@types/express": "^5.0.6"
   }

@@ -165,35 +165,41 @@ setTimeout(() => setMsg(null), 1200);
   }
     if (isAdmin === false) {
       return (
-        <div className="mb-4 p-4 max-w-2xl mx-auto bg-site-card border border-site-border rounded-lg">
-          <div className="text-site-muted">Viewing as <span className="text-site-text font-semibold">{actorName ?? actorId}</span> — showing their requests.</div>
+        <div className="mb-4 max-w-2xl mx-auto">
+          <div className="text-sm text-site-muted">
+            Viewing as <span className="text-site-text font-semibold">{actorName ?? actorId}</span>
+            <span className="text-site-muted"> — showing only their requests.</span>
+          </div>
         </div>
       );
     }
 
     return (
-      <form onSubmit={onSubmit} className="mb-4 p-0 max-w-2xl mx-auto">
-      <div className="flex flex-col gap-3">
+      <form onSubmit={onSubmit} className="mb-0 p-0 w-full">
+      <div className="flex flex-col gap-6 w-full">
         <div className="flex gap-3 items-center w-full">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Request title..."
             className="flex-1 min-w-0 px-3 py-3 rounded-lg border border-site-border bg-transparent text-site-text outline-none"
+            style={{ marginRight: "10px", marginBottom: "10px" }}
           />
 
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="w-28 px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none"
-            aria-label="Priority"
-          >
+          <div className="flex-shrink-0 flex items-center gap-6">
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-28 px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none"
+              style={{ marginRight: "10px", marginBottom: "10px" }}
+              aria-label="Priority"
+            >
             <option value="LOW">LOW</option>
             <option value="MEDIUM">MEDIUM</option>
             <option value="HIGH">HIGH</option>
           </select>
 
-          <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className="w-40 px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none" aria-label="Assignee">
+            <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className="w-40 px-3 py-2 rounded-lg border border-site-border bg-transparent text-site-text outline-none" style={{ marginBottom: "10px" }} aria-label="Assignee">
             {isAdmin ? (
               <>
                 <option value="u_demo">Demo User</option>
@@ -208,10 +214,17 @@ setTimeout(() => setMsg(null), 1200);
               </>
             )}
           </select>
+          </div>
         </div>
 
         <div>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description (details, acceptance criteria, UI notes...)" rows={5} className="w-full px-3 py-3 rounded-lg border border-site-border bg-transparent text-site-text outline-none resize-y" />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description (details, acceptance criteria, UI notes...)"
+            rows={5}
+            className="w-full box-border min-w-0 px-3 py-3 rounded-lg border border-site-border bg-transparent text-site-text outline-none resize-none max-h-48 overflow-auto"
+          />
         </div>
 
         <div className="flex items-center gap-3">
